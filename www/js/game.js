@@ -179,21 +179,121 @@ function Key(team,orientation,isLocked,position)
     this._downrotation=null;
     this._downleftrotation=null;
     this._leftrotation=null;
+    this.rotationPoints = null
     this.highlightRotatationPoints = function(canvas)
     {
         var innerColor;
         var outerColor;
         var possibleMoves = []
-        this._upleftrotation={y:this.position.y-1,x:this.position.x+1}
-        this._uprotation={y:this.position.y-1,x:this.position.x+1}
+        this._upleftrotation={y:this.position.y-1,x:this.position.x-1}
+        this._uprotation={y:this.position.y-1,x:this.position.x}
         this._uprightrotation={y:this.position.y-1,x:this.position.x+1}
         this._rightrotation={y:this.position.y,x:this.position.x+1}
-        this._downrightrotation={y:this.position.y,x:this.position.x+1}
-        this._downrotation={y:this.position.y,x:this.position.x+1}
-        this._downleftrotation={y:this.position.y,x:this.position.x+1}
-        this._leftrotation={y:this.position.y,x:this.position.x+1}
+        this._downrightrotation={y:this.position.y+1,x:this.position.x+1}
+        this._downrotation={y:this.position.y+1,x:this.position.x}
+        this._downleftrotation={y:this.position.y+1,x:this.position.x-1}
+        this._leftrotation={y:this.position.y,x:this.position.x-1}
+        if((!(this.isOutOfBounds(this._upleftrotation))) && this.orientation!="upleft")
+        {
+            possibleMoves.push(this._upleftrotation)
+        }
+        if((!(this.isOutOfBounds(this._uprotation))) && (this.orientation!="up"))
+        {
+            possibleMoves.push(this._uprotation)
+        }
+        if((!(this.isOutOfBounds(this._uprightrotation))) && (this.orientation!="upright"))
+        {
+            possibleMoves.push(this._uprightrotation)
+        }
+
+        if((!(this.isOutOfBounds(this._rightrotation))) && (this.orientation!="right"))
+        {
+            possibleMoves.push(this._rightrotation)
+        }
+
+        if((!(this.isOutOfBounds(this._downrightrotation))) && (this.orientation!="downright"))
+        {
+            possibleMoves.push(this._downrightrotation)
+        }
+
+        if((!(this.isOutOfBounds(this._downrotation))) && (this.orientation!="down"))
+        {
+            possibleMoves.push(this._downrotation)
+        }
+
+        if((!(this.isOutOfBounds(this._downleftrotation))) && (this.orientation!="downleft"))
+        {
+            possibleMoves.push(this._downleftrotation)
+        }
+
+        if((!(this.isOutOfBounds(this._leftrotation))) && (this.orientation!="left"))
+        {
+            possibleMoves.push(this._leftrotation)
+        }
+        var innerColor;
+        var outerColor;
+        console.log(possibleMoves)
+        for(var i = 0;i<possibleMoves.length;i++)
+        {
+            if(possibleMoves[i].x%2==0)
+            {
+                if(possibleMoves[i].y%2==0)
+                {
+                    innerColor=color1
+                }
+                else
+                {
+                    innerColor=color2
+                }
+            }
+            else
+            {
+                if(possibleMoves[i].y%2==0)
+                {
+                    innerColor=color2
+                }
+                else
+                {
+                    innerColor=color1
+                }
+            }
+            if(canvas.width>canvas.height)
+            {
+                BLOCKHEIGHT= canvas.height/8;
+                BLOCKWIDTH = BLOCKHEIGHT;
+            }else{
+                BLOCKWIDTH= canvas.width/8 ;
+                BLOCKHEIGHT = BLOCKWIDTH ;
+            }
+            ctx = canvas.getContext("2d")
+
+            outerColor="green"
+            ctx.fillStyle=outerColor
+            ctx.fillRect(possibleMoves[i].x*BLOCKWIDTH,possibleMoves[i].y*BLOCKHEIGHT,BLOCKWIDTH,BLOCKHEIGHT)
+
+            ctx.fillStyle=innerColor
+            ctx.fillRect(possibleMoves[i].x*BLOCKWIDTH+(BLOCKWIDTH/8),
+            possibleMoves[i].y*BLOCKHEIGHT+(BLOCKHEIGHT/8),
+                    BLOCKWIDTH*(6/8),BLOCKHEIGHT*(6/8))
+        }
+        this.rotationPoints = possibleMoves
 
     }
+    this.isOutOfBounds = function(point)
+    {
+        if(point == null)
+        {
+            return true
+        }
+        else if (point.x>7 || point.y>7 || point.x<0 || point.y<0)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    };
     this.highlightPossibleMoves = function(canvas)
     {
         var innerColor;
@@ -261,11 +361,11 @@ function Key(team,orientation,isLocked,position)
         if(this.orientation == "up")
         {
             imageSource += "arrow-up-right-"+team+".svg"
-            console.log(imageSource)
+
             image.src = imageSource
         }else{console.log(this.orientation)
         image.src = imageSource}
-
+        image.src="svg/silver1.svg"
         var ctx = canvas.getContext("2d")
         if(canvas.width>canvas.height)
         {
@@ -424,7 +524,7 @@ function GameBoard(PositionArray)
     }
 }
 
-var key3 = new Key("gold","up",false,{x:3,y:3})
+var key3 = new Key("gold","left",false,{x:3,y:3})
 var key1 =new Key("gold","up",false,{x:1,y:3})
 var board = new GameBoard(
                         [[null,null,null,null,null,null,null,null],
@@ -483,6 +583,16 @@ function getMouse(e, canvas) {
 
 function getSquare(mouseClick)
 {
+    /* 0 1 2 3 4 5 6 7 8
+     0
+     1
+     2
+     3
+     4
+     5
+     6
+     7
+    */
     if(canvas.width>canvas.height)
     {
         BLOCKHEIGHT= canvas.height/8;
@@ -491,21 +601,7 @@ function getSquare(mouseClick)
         BLOCKWIDTH= canvas.width/8 ;
         BLOCKHEIGHT = BLOCKWIDTH ;
     }
-/* 0 1 2 3 4 5 6 7 8
- 0
- 1
- 2
- 3
- 4
- 5
- 6
- 7
 
-
-
-
-
-*/
     var x_cood= 0
     var y_cood= 0
     if(mouseClick.x<=BLOCKWIDTH)
@@ -584,20 +680,36 @@ function onClick(event)
                     {
                         if(board.PositionArray[i][d].isSelected == true)
                         {
-                            for(var c = 0;c<board.PositionArray[i][d].getAvailableMovements(board).length;c++)
+                            var ld = (board.PositionArray[i][d]).getAvailableMovements(board)
+                            var le = ld.length
+                            for(var c = 0;c<le;c++)
                             {
-                                var testPos_x =board.PositionArray[i][d].getAvailableMovements(board)[c].x
-                                var testPos_y =board.PositionArray[i][d].getAvailableMovements(board)[c].y
+                                console.log(board.PositionArray[i][d])
+                                //console.log(board.PositionArray[i][d])
+                                var testPos_x =ld[c].x
+                                var testPos_y =ld[c].y
                                 if(testPos_x==z.x && testPos_y==z.y)
                                 {
-                                    console.log(z)
-                                    console.log(board.PositionArray[i][d].position)
                                     board.movePiecefromAtoB(board.PositionArray[i][d].position,board.PositionArray[i][d].getAvailableMovements(board)[c])
 
                                 }
 
                             }
+                            var rotations = board.PositionArray[i][d].rotationPoints
+                            var rotLen = rotations.length
+                            for(var c=0;c<rotLen;c++)
+                            {
+                              var testPos_x =rotations[c].x
+                              var testPos_y =rotations[c].y
+                              if(testPos_x==z.x && testPos_y==z.y)
+                              {
+                                  board.movePiecefromAtoB(board.PositionArray[i][d].position,rotations[c])
+
+                              }
+                            }
+
                         }
+                        
                     }
 
                 }
